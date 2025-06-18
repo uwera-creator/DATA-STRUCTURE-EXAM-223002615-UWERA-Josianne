@@ -80,7 +80,7 @@ public:
         if (ratio >= 75.0)
             printf("Trend: Good (= 75%% presence)\n");
         else if (ratio >= 50.0)
-            printf("Trend: Moderate (50%% – 74%% presence)\n");
+            printf("Trend: Moderate (50%% â€“ 74%% presence)\n");
         else
             printf("Trend: Poor (< 50%% presence)\n");
 
@@ -184,7 +184,7 @@ int main() {
         reports[i]->generate(manager.getRecords(), manager.getSize());
     }
 
-    // Remove Bob (index 1)
+    // Remove (index 1)
     manager.removeAttendance(1);
 
     printf(">>> After Removing Index 1 :\n\n");
