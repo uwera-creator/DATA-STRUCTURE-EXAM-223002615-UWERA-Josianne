@@ -2,7 +2,7 @@ NAMES: UWERA Josianne
 Reg Number: 223002615
 Project Number:119
 
-
+ATTENDANCE REPORT GENERATOR
 This C++ project is designed to generate student attendance reports using object-oriented programming principles. It uses structures to store student details and attendance status, and it applies inheritance and polymorphism to create two types of reports: a daily attendance report and a trend analysis report. The ReportInterface abstract class defines a standard interface for report generation, and its derived classes implement specific reporting styles. The system allows dynamic addition and deletion of records, demonstrating effective memory management and real-time data handling. This approach helps simulate a real-world attendance monitoring application in an educational environment.
 
 
