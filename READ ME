@@ -1,0 +1,266 @@
+NAMES: UWERA Josianne
+Reg Number: 223002615
+Project Number:119
+
+
+This C++ project is designed to generate student attendance reports using object-oriented programming principles. It uses structures to store student details and attendance status, and it applies inheritance and polymorphism to create two types of reports: a daily attendance report and a trend analysis report. The ReportInterface abstract class defines a standard interface for report generation, and its derived classes implement specific reporting styles. The system allows dynamic addition and deletion of records, demonstrating effective memory management and real-time data handling. This approach helps simulate a real-world attendance monitoring application in an educational environment.
+
+
+#include <cstdio>
+   // Includes the standard input/output library for functions like printf.
+#include <cstring> 
+ // Includes the string manipulation library for functions like strcpy.
+
+// Date structure definition.
+struct Date {
+    int day;   
+ // Integer to store the day.
+    int month; 
+ // Integer to store the month.
+    int year;  
+ // Integer to store the year.
+};
+
+// Attendance structure definition.
+struct AttendanceRec {
+    char studentID[10]; 
+  // Character array to store the student ID (up to 9 characters + null terminator).
+    char studentName[20]; 
+// Character array to store the student name (up to 19 characters + null terminator).
+    Date* date;          
+ // Pointer to a Date object, indicating the date of attendance.
+    bool present;        
+ // Boolean to indicate if the student was present (true) or absent (false).
+};
+
+// Report base interface (abstract class).
+class ReportInterface {
+public:
+    // Virtual destructor to ensure proper cleanup of derived class objects when deleted via a base pointer.
+    virtual ~ReportInterface() {}
+    // Pure virtual function for generating a report. Must be implemented by derived classes.
+    virtual void generate(const AttendanceRec* recs, int n) = 0;
+};
+
+// Daily Attendance Report class, derived from ReportInterface.
+class DailyAttendanceReport : public ReportInterface {
+public:
+    // Implementation of the generate function for a daily attendance report.
+    void generate(const AttendanceRec* recs, int n) {
+        printf("=========== DAILY ATTENDANCE REPORT ===========\n"); 
+// Prints the report header.
+        int presentCount = 0; 
+// Initializes a counter for present students.
+
+        // Loops through each attendance record.
+        for (int i = 0; i < n; ++i) {
+            // Prints details for each student's attendance.
+            // %-10s: Left-justifies student name in a field of 10 characters.
+            // %02d: Prints day and month with leading zeros if they are single digits.
+            // %4d: Prints year with 4 digits.
+            // %s: Prints "Present" or "Absent" based on the boolean.
+            printf("Student: %-10s (%s) | Date: %02d/%02d/%4d | Status: %s\n",
+                   recs[i].studentName,   // Student's name.
+                   recs[i].studentID,      // Student's ID.
+                   recs[i].date->day,      // Day of attendance.
+                   recs[i].date->month,    // Month of attendance.
+                   recs[i].date->year,     // Year of attendance.
+                   recs[i].present ? "Present" : "Absent"); // Status (Present/Absent).
+            if (recs[i].present) presentCount++; 
+// Increments presentCount if the student was present.
+        }
+
+        // Prints the total number of students present.
+        printf("Total Present: %d out of %d students\n", presentCount, n);
+        printf("===============================================\n\n"); 
+// Prints the report footer.
+    }
+};
+
+// Trend Attendance Report class, derived from ReportInterface.
+class TrendAttendanceReport : public ReportInterface {
+public:
+    // Implementation of the generate function for a trend attendance report.
+    void generate(const AttendanceRec* recs, int n) {
+        printf("=========== TREND ATTENDANCE REPORT ===========\n");
+ // Prints the report header.
+
+        // Checks if there's enough data to determine a trend.
+        if (n < 2) {
+            printf("Not enough data to determine trend.\n"); // Message for insufficient data.
+            printf("===============================================\n\n"); 
+// Prints the report footer.
+            return; // Exits the function.
+        }
+
+        // Displays information about the first attendance record.
+        printf("First Entry : %s (%s) - %s\n",
+               recs[0].studentName, recs[0].studentID,
+               recs[0].present ? "Present" : "Absent");
+
+        // Displays information about the last attendance record.
+        printf("Last Entry  : %s (%s) - %s\n",
+               recs[n - 1].studentName, recs[n - 1].studentID,
+               recs[n - 1].present ? "Present" : "Absent");
+
+        // Calculates the total number of present students.
+        int presentCount = 0;
+        for (int i = 0; i < n; ++i) {
+            if (recs[i].present) presentCount++;
+        }
+
+        // Calculates the presence ratio as a percentage.
+        double ratio = (double)presentCount / n * 100;
+        printf("Presence Ratio: %.2f%%\n", ratio); 
+// Prints the presence ratio, formatted to two decimal places.
+
+        // Interprets and prints the attendance trend based on the ratio.
+        if (ratio >= 75.0)
+            printf("Trend: Good (= 75%% presence)\n");
+        else if (ratio >= 50.0)
+            printf("Trend: Moderate (50%% – 74%% presence)\n");
+        else
+            printf("Trend: Poor (< 50%% presence)\n");
+
+        printf("===============================================\n\n"); // Prints the report footer.
+    }
+};
+
+// Attendance Manager class for managing attendance records.
+class AttendanceManager {
+private:
+    AttendanceRec* recs; 
+// Pointer to a dynamically allocated array of AttendanceRec objects.
+    int size;           
+ // Current number of records in the array.
+
+public:
+    // Constructor initializes recs to NULL and size to 0.
+    AttendanceManager() {
+        recs = NULL;
+        size = 0;
+    }
+
+    // Destructor to deallocate dynamically allocated memory.
+    ~AttendanceManager() {
+        // Loops through each record to delete the dynamically allocated Date object.
+        for (int i = 0; i < size; ++i) {
+            delete recs[i].date;
+        }
+        // Deletes the entire array of AttendanceRec objects.
+        delete[] recs;
+    }
+
+    // Function to add a new attendance record.
+    void addAttendance(const AttendanceRec& newRec) {
+        // Creates a new temporary array one size larger.
+        AttendanceRec* temp = new AttendanceRec[size + 1];
+        // Copies existing records to the temporary array.
+        for (int i = 0; i < size; ++i) {
+            temp[i] = recs[i];
+        }
+
+        // Dynamically allocates a new Date object for the new record.
+        temp[size].date = new Date;
+        // Copies the date data from the newRec to the newly allocated Date object.
+        *temp[size].date = *newRec.date;
+        // Copies student ID using strcpy.
+        std::strcpy(temp[size].studentID, newRec.studentID);
+        // Copies student name using strcpy.
+        std::strcpy(temp[size].studentName, newRec.studentName);
+        // Copies presence status.
+        temp[size].present = newRec.present;
+
+        delete[] recs; // Deletes the old array.
+        recs = temp;   // Points recs to the new array.
+        size++;        // Increments the size.
+    }
+
+    // Function to remove an attendance record by index.
+    void removeAttendance(int index) {
+        // Checks for invalid index.
+        if (index < 0 || index >= size) {
+            printf("Invalid index.\n"); // Error message for invalid index.
+            return; // Exits the function.
+        }
+
+        delete recs[index].date; // Deletes the Date object associated with the record being removed.
+
+        // Creates a new temporary array one size smaller.
+        AttendanceRec* temp = new AttendanceRec[size - 1];
+        int j = 0; // Index for the temporary array.
+        // Loops through existing records to copy them to the temporary array, skipping the one to be removed.
+        for (int i = 0; i < size; ++i) {
+            if (i != index) {
+                temp[j] = recs[i]; // Copies the record.
+                temp[j].date = new Date; // Dynamically allocates a new Date object for the copied record.
+                *temp[j].date = *recs[i].date; // Copies the date data.
+                j++; // Increments the temporary array index.
+            }
+        }
+
+        delete[] recs; // Deletes the old array.
+        recs = temp;   // Points recs to the new array.
+        size--;        // Decrements the size.
+    }
+
+    // Getter function to return a pointer to the attendance records.
+    AttendanceRec* getRecords() const { return recs; }
+    // Getter function to return the current size of the records array.
+    int getSize() const { return size; }
+};
+
+// Main function where the program execution begins.
+int main() {
+    AttendanceManager manager; // Creates an instance of AttendanceManager.
+
+    // Arrays of data for initializing attendance records.
+    const char* names[] = { "Uwera", "Josianne", "Arthur","Darren","Talent" }; // Student names.
+    bool presentFlags[] = { true, false, true, true, false }; // Presence status (extended to 5 elements).
+    int days[] = {1, 2, 3, 4, 5}; // Days of the month (extended to 5 elements).
+
+    // Loop to add 5 attendance records.
+    for (int i = 0; i < 5; ++i) {
+        AttendanceRec rec; // Creates a temporary AttendanceRec object.
+        std::sprintf(rec.studentID, "S00%d", i + 1); // Formats student ID (e.g., S001, S002).
+        std::strcpy(rec.studentName, names[i]);       // Copies student name.
+
+        rec.date = new Date;     // Dynamically allocates a Date object for the record.
+        rec.date->day = days[i];     // Sets the day.
+        rec.date->month = 6;     // Sets the month.
+        rec.date->year = 2025;   // Sets the year.
+
+        rec.present = presentFlags[i]; // Sets the presence status.
+        manager.addAttendance(rec);    // Adds the record to the manager.
+    }
+
+    // Creates an array of ReportInterface pointers to hold different report types.
+    ReportInterface* reports[2];
+    reports[0] = new DailyAttendanceReport(); // Creates a DailyAttendanceReport object.
+    reports[1] = new TrendAttendanceReport(); // Creates a TrendAttendanceReport object.
+
+    // Generates initial reports.
+    printf(">>> Initial Reports:\n\n"); // Prints a header for initial reports.
+    for (int i = 0; i < 2; ++i) {
+        reports[i]->generate(manager.getRecords(), manager.getSize()); // Calls generate on each report.
+    }
+
+    // Removes the record at index 1 (Josianne).
+    manager.removeAttendance(1);
+
+    printf(">>> After Removing Index 1 :\n\n"); // Prints a header indicating a record was removed.
+
+    // Generates reports after removal.
+    for (int i = 0; i < 2; ++i) {
+        reports[i]->generate(manager.getRecords(), manager.getSize()); // Calls generate on each report again.
+    }
+
+    // Cleans up dynamically allocated report objects.
+    for (int i = 0; i < 2; ++i) {
+        delete reports[i];
+    }
+
+    return 0; // Indicates successful program execution.
+}
+
+The project successfully demonstrates how C++ can be used to manage and analyze student attendance through flexible and reusable code. Using dynamic arrays and pointers, it handles a variable number of records and ensures clean memory usage. The generated reports give both detailed and summary views of attendance: daily presence status for each student and overall attendance trends, including a percentage ratio and quality assessment. This project provides a practical example of using object-oriented design to solve everyday problems in academic administration.
